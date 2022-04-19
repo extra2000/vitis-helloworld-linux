@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ASCII"?>
+<sdkproject:SdkProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdkproject="http://www.xilinx.com/sdkproject" name="helloworld" location="./helloworld" platform="../../../workspace/arty-z7-20/export/arty-z7-20/arty-z7-20.xpfm" platformUID="xilinx:arty-z7-20::0.0(custom)" systemProject="helloworld_system" sysConfig="arty-z7-20" runtime="C/C++" cpu="linux_domain" cpuInstance="cortex-a9" os="linux">
+  <configuration name="Debug" id="xilinx.gnu.armv7.linux.exe.debug.1271187254">
+    <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
+    <lastBuildOptions xsi:type="sdkproject:SdkOptions"/>
+  </configuration>
+  <configuration name="Release" id="xilinx.gnu.armv7.linux.exe.release.925109311" dirty="true">
+    <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
+  </configuration>
+  <template appTemplateName="linux_hello_world"/>
+</sdkproject:SdkProject>

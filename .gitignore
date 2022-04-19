@@ -1,0 +1,12 @@
+.Xil
+
+petalinux/*
+!petalinux/.gitkeep
+
+vivado/run/*
+!vivado/run/.gitkeep
+
+vitis/helloworld/_ide/
+
+workspace/*
+!workspace/.gitkeep
