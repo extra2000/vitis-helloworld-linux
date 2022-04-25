@@ -2,7 +2,7 @@
 proc checkRequiredFiles { origin_dir} {
   set status true
   set files [list \
- "[file normalize "$origin_dir/../src/verilog/arty_z7_20_wrapper.v"]"\
+ "[file normalize "$origin_dir/../src/constrs/artyz7-20.xdc"]"\
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -110,13 +110,14 @@ set_property -name "revised_directory_structure" -value "1" -objects $obj
 set_property -name "sim.central_dir" -value "$proj_dir/${_xil_proj_name_}.ip_user_files" -objects $obj
 set_property -name "sim.ip.auto_export_scripts" -value "1" -objects $obj
 set_property -name "simulator_language" -value "Mixed" -objects $obj
-set_property -name "webtalk.activehdl_export_sim" -value "1" -objects $obj
-set_property -name "webtalk.modelsim_export_sim" -value "1" -objects $obj
-set_property -name "webtalk.questa_export_sim" -value "1" -objects $obj
-set_property -name "webtalk.riviera_export_sim" -value "1" -objects $obj
-set_property -name "webtalk.vcs_export_sim" -value "1" -objects $obj
+set_property -name "source_mgmt_mode" -value "DisplayOnly" -objects $obj
+set_property -name "webtalk.activehdl_export_sim" -value "2" -objects $obj
+set_property -name "webtalk.modelsim_export_sim" -value "2" -objects $obj
+set_property -name "webtalk.questa_export_sim" -value "2" -objects $obj
+set_property -name "webtalk.riviera_export_sim" -value "2" -objects $obj
+set_property -name "webtalk.vcs_export_sim" -value "2" -objects $obj
 set_property -name "webtalk.xcelium_export_sim" -value "1" -objects $obj
-set_property -name "webtalk.xsim_export_sim" -value "1" -objects $obj
+set_property -name "webtalk.xsim_export_sim" -value "2" -objects $obj
 set_property -name "xpm_libraries" -value "XPM_CDC" -objects $obj
 
 # Create 'sources_1' fileset (if not found)
@@ -126,11 +127,6 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
-set files [list \
- [file normalize "${origin_dir}/../src/verilog/arty_z7_20_wrapper.v"] \
-]
-add_files -norecurse -fileset $obj $files
-
 # Set 'sources_1' fileset file properties for remote files
 # None
 
@@ -140,6 +136,7 @@ add_files -norecurse -fileset $obj $files
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]
 set_property -name "top" -value "arty_z7_20_wrapper" -objects $obj
+set_property -name "top_auto_set" -value "0" -objects $obj
 
 # Create 'constrs_1' fileset (if not found)
 if {[string equal [get_filesets -quiet constrs_1] ""]} {
@@ -149,7 +146,13 @@ if {[string equal [get_filesets -quiet constrs_1] ""]} {
 # Set 'constrs_1' fileset object
 set obj [get_filesets constrs_1]
 
-# Empty (no sources present)
+# Add/Import constrs file and set constrs file properties
+set file "[file normalize "$origin_dir/../src/constrs/artyz7-20.xdc"]"
+set file_added [add_files -norecurse -fileset $obj [list $file]]
+set file "$origin_dir/../src/constrs/artyz7-20.xdc"
+set file [file normalize $file]
+set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
+set_property -name "file_type" -value "XDC" -objects $file_obj
 
 # Set 'constrs_1' fileset properties
 set obj [get_filesets constrs_1]
@@ -166,6 +169,7 @@ set obj [get_filesets sim_1]
 # Set 'sim_1' fileset properties
 set obj [get_filesets sim_1]
 set_property -name "top" -value "arty_z7_20_wrapper" -objects $obj
+set_property -name "top_auto_set" -value "0" -objects $obj
 set_property -name "top_lib" -value "xil_defaultlib" -objects $obj
 
 # Set 'utils_1' fileset object
@@ -196,8 +200,6 @@ proc cr_bd_arty_z7_20 { parentCell } {
   set bCheckIPs 1
   if { $bCheckIPs == 1 } {
      set list_check_ips "\
-  xilinx.com:ip:clk_wiz:6.0\
-  xilinx.com:ip:proc_sys_reset:5.0\
   xilinx.com:ip:processing_system7:5.5\
   "
 
@@ -258,21 +260,6 @@ proc cr_bd_arty_z7_20 { parentCell } {
 
   # Create ports
   set sys_clock [ create_bd_port -dir I -type clk -freq_hz 125000000 sys_clock ]
-  set_property -dict [ list \
-   CONFIG.PHASE {0.0} \
- ] $sys_clock
-
-  # Create instance: clk_wiz_0, and set properties
-  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0 ]
-  set_property -dict [ list \
-   CONFIG.CLK_IN1_BOARD_INTERFACE {sys_clock} \
-   CONFIG.RESET_PORT {resetn} \
-   CONFIG.RESET_TYPE {ACTIVE_LOW} \
-   CONFIG.USE_BOARD_FLOW {true} \
- ] $clk_wiz_0
-
-  # Create instance: proc_sys_reset_0, and set properties
-  set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_0 ]
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -1059,12 +1046,29 @@ gpio[0]#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
 
   # Create port connections
-  connect_bd_net -net Net [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK]
-  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins clk_wiz_0/resetn] [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins processing_system7_0/FCLK_RESET0_N]
-  connect_bd_net -net sys_clock_1 [get_bd_ports sys_clock] [get_bd_pins clk_wiz_0/clk_in1]
+  connect_bd_net -net M_AXI_GP0_ACLK_0_1 [get_bd_ports sys_clock] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK]
 
   # Create address segments
 
+  # Perform GUI Layout
+  regenerate_bd_layout -layout_string {
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.952239",
+   "Default View_TopLeft":"-116,-9",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -lvl 2 -x 440 -y 60 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -lvl 2 -x 440 -y 80 -defaultsOSRD
+preplace port port-id_sys_clock -pg 1 -lvl 0 -x 0 -y 110 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 1 -x 220 -y 110 -defaultsOSRD
+preplace netloc M_AXI_GP0_ACLK_0_1 1 0 1 N 110
+preplace netloc processing_system7_0_DDR 1 1 1 NJ 60
+preplace netloc processing_system7_0_FIXED_IO 1 1 1 NJ 80
+levelinfo -pg 1 0 220 440
+pagesize -pg 1 -db -bbox -sgen -120 0 560 220
+"
+}
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1077,6 +1081,15 @@ gpio[0]#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]/HOLD_B#qspi0_
 cr_bd_arty_z7_20 ""
 set_property GENERATE_SYNTH_CHECKPOINT "0" [get_files arty_z7_20.bd ]
 set_property REGISTERED_WITH_MANAGER "1" [get_files arty_z7_20.bd ]
+
+#call make_wrapper to create wrapper files
+if { [get_property IS_LOCKED [ get_files -norecurse arty_z7_20.bd] ] == 1  } {
+  import_files -fileset sources_1 [file normalize "${origin_dir}/../run/vitis_helloworld/vitis_helloworld.gen/sources_1/bd/arty_z7_20/hdl/arty_z7_20_wrapper.v" ]
+} else {
+  set wrapper_path [make_wrapper -fileset sources_1 -files [ get_files -norecurse arty_z7_20.bd] -top]
+  add_files -norecurse -fileset sources_1 $wrapper_path
+}
+
 
 set idrFlowPropertiesConstraints ""
 catch {
